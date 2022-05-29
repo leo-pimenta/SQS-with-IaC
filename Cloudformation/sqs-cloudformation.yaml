@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates the chat queue to store and deliver messages
+Resources: 
+  ChatQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ChatQueue.fifo
+      FifoQueue:  true
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - "ChatDeadLetterQueue"
+            - "Arn"
+        maxReceiveCount: 5
+  ChatDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ChatDeadLetterQueue.fifo
+      FifoQueue:  true
+Outputs:
+  QueueURL:
+    Description: "URL of new AmazonSQS Queue"
+    Value:
+      Fn::GetAtt:
+        - "ChatQueue"
+        - "Arn"
+  QueueARN: 
+    Description: "ARN of new AmazonSQS Queue"
+    Value: 
+      Fn::GetAtt: 
+        - "ChatQueue"
+        - "Arn"
+  QueueName: 
+    Description: "Name of new Amazon SQS Queue"
+    Value: 
+      Fn::GetAtt: 
+        - "ChatQueue"
+        - "QueueName"
+  DeadLetterQueueURL:
+    Description: "URL of new AmazonSQS DeadLetter Queue"
+    Value:
+      Fn::GetAtt:
+        - "ChatDeadLetterQueue"
+        - "Arn"
+  DeadLetterQueueARN: 
+    Description: "ARN of new AmazonSQS DeadLetter Queue"
+    Value: 
+      Fn::GetAtt: 
+        - "ChatDeadLetterQueue"
+        - "Arn"
+  DeadLetterQueueName: 
+    Description: "Name of new Amazon SQS DeadLetter Queue"
+    Value: 
+      Fn::GetAtt: 
+        - "ChatDeadLetterQueue"
+        - "QueueName"
