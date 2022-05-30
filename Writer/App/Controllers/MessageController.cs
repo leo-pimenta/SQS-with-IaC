@@ -11,7 +11,7 @@ namespace App.Controllers
     {
         private IMessageService MessageService;
 
-        internal MessageController(IMessageService messageService) 
+        public MessageController(IMessageService messageService) 
         {
             MessageService = messageService;
         }
