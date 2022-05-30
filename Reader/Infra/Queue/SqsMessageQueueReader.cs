@@ -33,8 +33,8 @@ namespace Infra.Queue
                 QueueUrl = Environment.GetEnvironmentVariable("SQS_QUEUE_URL"),
                 AttributeNames = new List<string> { "All" },
                 MaxNumberOfMessages = count,
-                VisibilityTimeout = (int)VisibilityTimeout.TotalSeconds,
-                WaitTimeSeconds = (int)WaitTimeSeconds.TotalSeconds
+                VisibilityTimeout = Convert.ToInt32(Environment.GetEnvironmentVariable("SQS_QUEUE_VISIBILITY_TIMEOUT")),
+                WaitTimeSeconds = Convert.ToInt32(Environment.GetEnvironmentVariable("SQS_QUEUE_WAIT_TIME_SECONDS")),
             };
 
             var response = await SQS.ReceiveMessageAsync(request);
