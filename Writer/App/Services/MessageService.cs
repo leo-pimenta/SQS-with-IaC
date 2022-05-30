@@ -13,7 +13,7 @@ namespace App.Services
     {
         private IMessageQueue MessageQueue;
 
-        internal MessageService(IMessageQueue messageQueue)
+        public MessageService(IMessageQueue messageQueue)
         {
             MessageQueue = messageQueue;
         }

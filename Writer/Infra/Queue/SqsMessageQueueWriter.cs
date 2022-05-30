@@ -21,12 +21,14 @@ namespace Infra.Queue
             var request = new SendMessageRequest
             {
                 MessageBody = JsonSerializer.Serialize(message),
-                QueueUrl = Environment.GetEnvironmentVariable("SQS_QUEUE_URL")
+                QueueUrl = Environment.GetEnvironmentVariable("SQS_QUEUE_URL"),
+                MessageGroupId = "1",
+                MessageDeduplicationId = Guid.NewGuid().ToString()
             };
 
             var response = await SQS.SendMessageAsync(request);
 
-            Validate.This<QueueWriteException>(response.HttpStatusCode != HttpStatusCode.OK, 
+            Validate.This<QueueWriteException>(response.HttpStatusCode == HttpStatusCode.OK, 
                 "Failed to send message to SQS.");
             
             return response.MessageId;
