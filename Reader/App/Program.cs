@@ -1,20 +1,19 @@
 using App.Services;
-using Infra.DI;
+using Infra.Factories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+
 builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-InfraDependencies.Inject(builder.Services);
-builder.Services.AddSingleton<IMessageService, MessageService>();
-builder.WebHost.UseKestrel(options => 
-{
-    options.ListenLocalhost(5002);
-});
+builder.WebHost.UseKestrel();
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -32,4 +31,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var messageService = new MessageService(MessageQueueFactory.Create());
+var timer = new App.Services.Timer(TimeSpan.FromSeconds(1));
+var continuousQueueReader = new ContinuousQueueReader(timer, messageService);
+continuousQueueReader.Start();
+
 app.Run();
+
