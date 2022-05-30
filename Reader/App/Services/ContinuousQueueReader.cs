@@ -2,7 +2,7 @@ namespace App.Services
 {
     internal class ContinuousQueueReader
     {
-        private const int ReadCount = 10;
+        private const int ReadCount = 5;
 
         private readonly ITimer Timer;
         private readonly IMessageService MessageService;
@@ -26,7 +26,7 @@ namespace App.Services
 
         private void Read()
         {
-            var task = MessageService.GetMessagesAsync(5);
+            var task = MessageService.GetMessagesAsync(ReadCount);
             task.Wait();
             var messageInfos = task.Result;
 
