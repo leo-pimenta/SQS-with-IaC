@@ -46,7 +46,7 @@ namespace Test.Infra
         {
             this.MessagesEnqueued.Clear();
             var messages = await this.Reader.PollMessagesAsync(POLL_EXPECTED_COUNT);
-            Assert.Empty(messages);
+            messages.Should().BeEmpty();
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Test.Infra
         {
             int ExpectedMessagesCount = MessagesEnqueued.Count;
             var messages = await this.Reader.PollMessagesAsync(ExpectedMessagesCount);
-            Assert.Equal(ExpectedMessagesCount, messages.Count());
+            messages.Should().HaveCount(ExpectedMessagesCount);
         }
 
         [Fact]
@@ -116,12 +116,63 @@ namespace Test.Infra
             this.SqsMock.VerifyNoOtherCalls();
         }
 
-        /*
-            // TODO continue from here:
+        [Fact]
+        public async Task Should_ThrowArgumentExcpetion_On_PollMessagesAsync_WhenCountIsZero()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(async () => 
+                await this.Reader.PollMessagesAsync(0));
+        }
 
-            - retry 3 times if failed
-            - Silently exists if cannot delete
-        */
+        [Fact]
+        public async Task Should_ThrowArgumentExcpetion_On_PollMessagesAsync_WhenCountIsNegative()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(async () => 
+                await this.Reader.PollMessagesAsync(new Random().Next(-9999, -1)));
+        }
+
+        [Fact]
+        public async Task Should_ThrowArgumentException_On_DeleteMessagesAsync_WhenMessageInfosIsNull()
+        {
+            #pragma warning disable CS8625
+            await Assert.ThrowsAsync<ArgumentException>(async () => 
+                await this.Reader.DeleteMessagesAsync(null));
+        }
+
+        [Fact]
+        public async Task Should_ThrowArgumentException_On_DeleteMessagesAsync_WhenMessageInfosIsEmpty()
+        {
+            #pragma warning disable CS8625
+            await Assert.ThrowsAsync<ArgumentException>(async () => 
+                await this.Reader.DeleteMessagesAsync(new List<QueueMessageInfo>()));
+        }
+
+        [Fact]
+        // there's a possibly interesting comment about this on the SqsMessageQueueReader DeleteMessagesAsync method
+        public async Task Should_SilentlyIgnoreDeletionErros()
+        {
+            this.SqsMock.Setup(sqs => sqs.DeleteMessageBatchAsync(It.IsAny<DeleteMessageBatchRequest>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(new DeleteMessageBatchResponse()
+                {
+                    Failed = new List<BatchResultErrorEntry>()
+                    {
+                        new BatchResultErrorEntry()
+                    }
+                }));
+
+            var messageInfos = new List<QueueMessageInfo>()
+            {
+                new QueueMessageInfo(new Domain.Message(""), "")
+            };
+
+            try
+            {
+                await Reader.DeleteMessagesAsync(messageInfos);
+            }
+            catch
+            {
+                Assert.True(false);
+            }
+        }
 
         private void MockDefaultBehavior()
         {
