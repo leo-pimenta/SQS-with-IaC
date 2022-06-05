@@ -18,6 +18,10 @@ namespace Infra.Queue
 
         public async Task<string> PushAsync(Domain.Message message)
         {
+            Validate.This<ArgumentNullException>(message != null, "Message");
+            Validate.This<ArgumentException>(!string.IsNullOrWhiteSpace(message?.Body), 
+                "Body cannot be null, empty or whitespaces.");
+
             var request = new SendMessageRequest
             {
                 MessageBody = JsonSerializer.Serialize(message),
@@ -25,9 +29,9 @@ namespace Infra.Queue
                 MessageGroupId = "1",
                 MessageDeduplicationId = Guid.NewGuid().ToString()
             };
-
+            
             var response = await SQS.SendMessageAsync(request);
-
+            
             Validate.This<QueueWriteException>(response.HttpStatusCode == HttpStatusCode.OK, 
                 "Failed to send message to SQS.");
             
