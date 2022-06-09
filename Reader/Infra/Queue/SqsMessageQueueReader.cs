@@ -58,18 +58,7 @@ namespace Infra.Queue
             }; 
 
             var response = await SQS.DeleteMessageBatchAsync(deleteRequest);
-            
-            /*
-                This should be retried (or not, see suggestion 3), so we don't get duplicates from SQS.
-                I'm not giving much thought to this right now, since I don't have any need for Reliability for this project, so it's out of scope for now.
-                But some quick thoughts on this:
-                
-                    1 - Add to a retry class to do it async. We could simply use Polly.Net, but I don't want to retry sync and lock this execution.
-                    2 - The above could fail due to service shutdown. We could save this to a DB, but would have to handle concurrency - another queue might
-                        fix this, but might have the same problems. We could lock the DB, but would need proper and complex logic.
-                    3 - Not retry at all and simply handle duplicates on poll, but would add latency on read. Cache recent reads could make the latency a smaller number.
-                        There's also no need for speed on this project, since it's so simple, but it's fun to list solutions lol
-            */
+
             foreach (var failedDeletion in response.Failed)
             {
                 Console.WriteLine($"Failed to delete message: {JsonSerializer.Serialize(failedDeletion)}");

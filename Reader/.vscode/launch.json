@@ -20,7 +20,9 @@
                 "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
             },
             "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "SQS_QUEUE_VISIBILITY_TIMEOUT": "60",
+                "SQS_QUEUE_WAIT_TIME_SECONDS": "5",
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
